@@ -1,0 +1,72 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [develop, main]
+  push:
+    branches: [develop]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    name: Lint, Type Check & Test
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_DB: tripgo_test
+          POSTGRES_USER: tripgo
+          POSTGRES_PASSWORD: tripgo_test_pass
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U tripgo"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type check
+        run: npm run type-check
+
+      - name: Run tests
+        run: npm run test -- --run
+        env:
+          DATABASE_URL: postgresql://tripgo:tripgo_test_pass@localhost:5432/tripgo_test
+          REDIS_URL: redis://localhost:6379
+          SUPABASE_URL: http://localhost:54321
+          SUPABASE_SERVICE_KEY: test-key
+          CORS_ORIGIN: http://localhost:3000
+          OSRM_URL: http://localhost:5000
+          NODE_ENV: test
+
+      - name: Build
+        run: npm run build
