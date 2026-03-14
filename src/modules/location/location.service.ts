@@ -1,4 +1,4 @@
-import { supabase } from "../../db/client.js";
+import { getSupabase } from "../../db/client.js";
 
 export type MemberStatus = "there" | "coming" | "lost";
 
@@ -11,6 +11,7 @@ export async function updateLocation(
   latitude: number,
   longitude: number
 ) {
+  const supabase = getSupabase();
   const { data, error } = await supabase
     .from("member_locations")
     .upsert(
@@ -30,6 +31,7 @@ export async function updateLocation(
 }
 
 export async function getGroupLocations(tripId: string) {
+  const supabase = getSupabase();
   const { data, error } = await supabase
     .from("member_locations")
     .select("*")

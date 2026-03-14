@@ -1,7 +1,8 @@
 import { getRoute } from "../../lib/osrm.js";
-import { supabase } from "../../db/client.js";
+import { getSupabase } from "../../db/client.js";
 
 export async function calculateTripRoute(tripId: string) {
+  const supabase = getSupabase();
   const { data: places } = await supabase
     .from("places")
     .select("latitude, longitude")
@@ -18,6 +19,7 @@ export async function calculateTripRoute(tripId: string) {
 }
 
 export async function calculateDayRoute(tripId: string, dayId: string) {
+  const supabase = getSupabase();
   const { data: activities } = await supabase
     .from("activities")
     .select("place_id, places(latitude, longitude)")

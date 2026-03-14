@@ -1,9 +1,10 @@
-import { supabase } from "../../db/client.js";
+import { getSupabase } from "../../db/client.js";
 import { uploadFile } from "../../lib/r2.js";
 import type { CreateMessageInput } from "./chat.schema.js";
 import { nanoid } from "nanoid";
 
 export async function getMessages(channelId: string, cursor?: string, limit = 50) {
+  const supabase = getSupabase();
   let query = supabase
     .from("messages")
     .select("*")
@@ -21,6 +22,7 @@ export async function getMessages(channelId: string, cursor?: string, limit = 50
 }
 
 export async function createMessage(channelId: string, userId: string, input: CreateMessageInput) {
+  const supabase = getSupabase();
   const { data, error } = await supabase
     .from("messages")
     .insert({

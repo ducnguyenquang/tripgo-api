@@ -15,9 +15,10 @@ export async function sendPushNotification(
   await webpush.sendNotification(subscription, body);
 }
 
-import { supabase } from "../../db/client.js";
+import { getSupabase } from "../../db/client.js";
 
 export async function subscribeUser(userId: string, subscription: webpush.PushSubscription) {
+  const supabase = getSupabase();
   const { error } = await supabase.from("push_subscriptions").upsert({
     user_id: userId,
     endpoint: subscription.endpoint,
@@ -28,6 +29,7 @@ export async function subscribeUser(userId: string, subscription: webpush.PushSu
 }
 
 export async function unsubscribeUser(userId: string, endpoint: string) {
+  const supabase = getSupabase();
   const { error } = await supabase
     .from("push_subscriptions")
     .delete()

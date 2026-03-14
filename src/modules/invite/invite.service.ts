@@ -1,9 +1,10 @@
-import { supabase } from "../../db/client.js";
+import { getSupabase } from "../../db/client.js";
 import { nanoid } from "nanoid";
 
 const TOKEN_EXPIRY_HOURS = 72;
 
 export async function generateInvite(tripId: string, createdBy: string) {
+  const supabase = getSupabase();
   const token = nanoid(32);
   const expiresAt = new Date();
   expiresAt.setHours(expiresAt.getHours() + TOKEN_EXPIRY_HOURS);
@@ -23,6 +24,7 @@ export async function generateInvite(tripId: string, createdBy: string) {
 }
 
 export async function validateInvite(token: string) {
+  const supabase = getSupabase();
   const { data, error } = await supabase
     .from("invites")
     .select("*, trips(*)")
@@ -37,6 +39,7 @@ export async function acceptInvite(token: string, userId: string) {
   const invite = await validateInvite(token);
   if (!invite) throw new Error("Invalid or expired invite");
 
+  const supabase = getSupabase();
   const { data, error } = await supabase
     .from("trip_members")
     .insert({

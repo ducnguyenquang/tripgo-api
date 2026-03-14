@@ -2,8 +2,8 @@ import type { FastifyInstance } from "fastify";
 import type { Server as HttpServer } from "http";
 import { Server } from "socket.io";
 import { createAdapter } from "@socket.io/redis-adapter";
-import { redis } from "../lib/redis.js";
-import { supabase } from "../db/client.js";
+import { getRedis } from "../lib/redis.js";
+import { getSupabase } from "../db/client.js";
 import { registerChatGateway } from "../modules/chat/chat.gateway.js";
 import { registerLocationGateway } from "../modules/location/location.gateway.js";
 
@@ -18,8 +18,18 @@ export async function registerSocket(app: FastifyInstance, httpServer: HttpServe
     cors: { origin: process.env.CORS_ORIGIN ?? "*" },
   });
 
-  const subClient = redis.duplicate();
-  io.adapter(createAdapter(redis, subClient));
+  if (process.env.REDIS_URL) {
+    try {
+      const redis = getRedis();
+      const subClient = redis.duplicate();
+      io.adapter(createAdapter(redis, subClient));
+      app.log.info("Socket.IO Redis adapter connected");
+    } catch (err) {
+      app.log.warn("Socket.IO running without Redis adapter (single-instance mode)");
+    }
+  } else {
+    app.log.warn("REDIS_URL not set. Socket.IO running without Redis adapter.");
+  }
 
   io.use(async (socket, next) => {
     const token =
@@ -27,6 +37,7 @@ export async function registerSocket(app: FastifyInstance, httpServer: HttpServe
       socket.handshake.headers?.authorization?.replace(/^Bearer\s+/i, "");
     if (!token) return next(new Error("Unauthorized"));
 
+    const supabase = getSupabase();
     const {
       data: { user },
       error,
@@ -46,5 +57,5 @@ export async function registerSocket(app: FastifyInstance, httpServer: HttpServe
   registerChatGateway(io);
   registerLocationGateway(io);
 
-  app.decorate("io", io);
+  (app as any).io = io;
 }

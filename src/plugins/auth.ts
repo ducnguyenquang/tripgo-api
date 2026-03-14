@@ -1,6 +1,6 @@
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import fp from "fastify-plugin";
-import { supabase } from "../db/client.js";
+import { getSupabase } from "../db/client.js";
 
 export interface AuthenticatedUser {
   id: string;
@@ -21,6 +21,7 @@ async function authPlugin(app: FastifyInstance) {
     const token = authHeader?.replace(/^Bearer\s+/i, "");
     if (!token) return;
 
+    const supabase = getSupabase();
     const { data: { user }, error } = await supabase.auth.getUser(token);
     if (error || !user) return;
 

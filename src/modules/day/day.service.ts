@@ -1,7 +1,8 @@
-import { supabase } from "../../db/client.js";
+import { getSupabase } from "../../db/client.js";
 import type { CreateDayInput, UpdateDayInput } from "./day.schema.js";
 
 export async function createDay(tripId: string, input: CreateDayInput) {
+  const supabase = getSupabase();
   const { data, error } = await supabase
     .from("days")
     .insert({
@@ -16,6 +17,7 @@ export async function createDay(tripId: string, input: CreateDayInput) {
 }
 
 export async function getDays(tripId: string) {
+  const supabase = getSupabase();
   const { data, error } = await supabase
     .from("days")
     .select("*, activities(*)")
@@ -26,6 +28,7 @@ export async function getDays(tripId: string) {
 }
 
 export async function updateDay(id: string, input: UpdateDayInput) {
+  const supabase = getSupabase();
   const payload: Record<string, unknown> = {};
   if (input.date != null) payload.date = input.date;
   if (input.title != null) payload.title = input.title;
@@ -41,6 +44,7 @@ export async function updateDay(id: string, input: UpdateDayInput) {
 }
 
 export async function deleteDay(id: string) {
+  const supabase = getSupabase();
   const { error } = await supabase.from("days").delete().eq("id", id);
   if (error) throw error;
 }

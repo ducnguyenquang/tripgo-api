@@ -49,6 +49,8 @@ export async function buildApp() {
   await app.register(routeRoutes, { prefix: "/trips" });
   await app.register(inviteRoutes);
 
+  app.decorate("io", null as any);
+
   await app.ready();
   await registerSocket(app, httpServer!);
 

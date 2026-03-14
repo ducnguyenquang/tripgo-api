@@ -1,7 +1,8 @@
-import { supabase } from "../../db/client.js";
+import { getSupabase } from "../../db/client.js";
 import type { CreateTripInput, UpdateTripInput } from "./trip.schema.js";
 
 export async function createTrip(userId: string, input: CreateTripInput) {
+  const supabase = getSupabase();
   const { data, error } = await supabase
     .from("trips")
     .insert({
@@ -19,6 +20,7 @@ export async function createTrip(userId: string, input: CreateTripInput) {
 }
 
 export async function getTrips(userId: string) {
+  const supabase = getSupabase();
   const { data, error } = await supabase
     .from("trips")
     .select("*")
@@ -28,12 +30,14 @@ export async function getTrips(userId: string) {
 }
 
 export async function getTripById(id: string) {
+  const supabase = getSupabase();
   const { data, error } = await supabase.from("trips").select("*").eq("id", id).single();
   if (error) throw error;
   return data;
 }
 
 export async function updateTrip(id: string, input: UpdateTripInput) {
+  const supabase = getSupabase();
   const payload: Record<string, unknown> = {};
   if (input.name != null) payload.name = input.name;
   if (input.destination != null) payload.destination = input.destination;
@@ -52,6 +56,7 @@ export async function updateTrip(id: string, input: UpdateTripInput) {
 }
 
 export async function deleteTrip(id: string) {
+  const supabase = getSupabase();
   const { error } = await supabase.from("trips").delete().eq("id", id);
   if (error) throw error;
 }

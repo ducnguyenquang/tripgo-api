@@ -1,7 +1,8 @@
-import { supabase } from "../../db/client.js";
+import { getSupabase } from "../../db/client.js";
 import type { CreateBillInput } from "./bill.schema.js";
 
 export async function createBill(tripId: string, input: CreateBillInput) {
+  const supabase = getSupabase();
   const { data, error } = await supabase
     .from("bills")
     .insert({
@@ -19,6 +20,7 @@ export async function createBill(tripId: string, input: CreateBillInput) {
 }
 
 export async function getBills(tripId: string) {
+  const supabase = getSupabase();
   const { data, error } = await supabase
     .from("bills")
     .select("*")

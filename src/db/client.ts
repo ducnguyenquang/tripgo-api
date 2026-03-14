@@ -1,6 +1,20 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
-const databaseUrl = process.env.DATABASE_URL ?? "";
-const serviceKey = process.env.SUPABASE_SERVICE_KEY ?? "";
+let _supabase: SupabaseClient | null = null;
 
-export const supabase = createClient(databaseUrl, serviceKey);
+export function getSupabase(): SupabaseClient {
+  if (!_supabase) {
+    const url = process.env.SUPABASE_URL;
+    const key = process.env.SUPABASE_SERVICE_KEY;
+    if (!url || !key) {
+      throw new Error(
+        "Missing SUPABASE_URL or SUPABASE_SERVICE_KEY. " +
+        "Copy .env.example to .env and fill in your Supabase credentials."
+      );
+    }
+    _supabase = createClient(url, key);
+  }
+  return _supabase;
+}
+
+export { _supabase as supabase };

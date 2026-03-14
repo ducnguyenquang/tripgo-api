@@ -1,7 +1,8 @@
-import { supabase } from "../../db/client.js";
+import { getSupabase } from "../../db/client.js";
 import type { CreateActivityInput, UpdateActivityInput } from "./activity.schema.js";
 
 export async function addActivity(dayId: string, input: CreateActivityInput) {
+  const supabase = getSupabase();
   const { data, error } = await supabase
     .from("activities")
     .insert({
@@ -18,6 +19,7 @@ export async function addActivity(dayId: string, input: CreateActivityInput) {
 }
 
 export async function updateActivity(id: string, input: UpdateActivityInput) {
+  const supabase = getSupabase();
   const payload: Record<string, unknown> = {};
   if (input.startTime != null) payload.start_time = input.startTime;
   if (input.endTime != null) payload.end_time = input.endTime;
@@ -34,11 +36,13 @@ export async function updateActivity(id: string, input: UpdateActivityInput) {
 }
 
 export async function removeActivity(id: string) {
+  const supabase = getSupabase();
   const { error } = await supabase.from("activities").delete().eq("id", id);
   if (error) throw error;
 }
 
 export async function reorderActivities(id: string, order: number) {
+  const supabase = getSupabase();
   const { data, error } = await supabase
     .from("activities")
     .update({ order })
